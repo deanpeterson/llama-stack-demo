@@ -1,0 +1,91 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    alpha.image.policy.openshift.io/resolve-names: '*'
+    app.openshift.io/route-disabled: 'false'
+    image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"distribution-remote-vllm:latest","namespace":"llama-stack"},"fieldPath":"spec.template.spec.containers[?(@.name==\"distribution-remote-vllm\")].image","paused":"false"}]'
+    openshift.io/generated-by: OpenShiftWebConsole
+  name: distribution-remote-vllm
+  namespace: llama-stack
+  labels:
+    app: distribution-remote-vllm
+    app.kubernetes.io/component: distribution-remote-vllm
+    app.kubernetes.io/instance: distribution-remote-vllm
+    app.kubernetes.io/name: distribution-remote-vllm
+    app.kubernetes.io/part-of: distribution-remote-vllm-app
+    app.openshift.io/runtime: python
+    app.openshift.io/runtime-namespace: llama-stack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: distribution-remote-vllm
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: distribution-remote-vllm
+        deployment: distribution-remote-vllm
+      annotations:
+        openshift.io/generated-by: OpenShiftWebConsole
+    spec:
+      volumes:
+        - name: config-volume
+          configMap:
+            name: distribution-remote-vllm-config
+            defaultMode: 420
+      containers:
+        - resources: {}
+          terminationMessagePath: /dev/termination-log
+          name: distribution-remote-vllm
+          command:
+            - python
+            - '-m'
+            - llama_stack.distribution.server.server
+          env:
+            - name: VLLM_URL
+              value: 'https://granite-3-1-8b-instruct-ai-composer.apps.salamander.aimlworkbench.com/v1'
+            - name: INFERENCE_MODEL
+              value: granite-3-1-8b-instruct
+            - name: ENABLE_AUTO_TOOL_CHOICE
+              value: 'true'
+            - name: TOOL_CALL_PARSER
+              value: 'true'
+            - name: PGVECTOR_HOST
+              value: postgresql.llama-stack.svc.cluster.local
+            - name: PGVECTOR_PORT
+              value: '5432'
+            - name: PGVECTOR_DB
+              value: vectordb
+            - name: PGVECTOR_USER
+              value: vectordb
+            - name: PGVECTOR_PASSWORD
+              value: vectordb
+            - name: PYTHONPATH
+              value: /usr/local/lib/python3.10/site-packages
+          ports:
+            - containerPort: 5001
+              protocol: TCP
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config.yaml
+              subPath: config.yaml
+          terminationMessagePolicy: File
+          image: 'quay.io/dpeterso/vllm-pgvector:0.1.9'
+          args:
+            - '--template'
+            - remote-vllm
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
