@@ -3,6 +3,7 @@ distribution_spec:
   description: vllm with pgvector
   providers:
     inference: remote::vllm
+    inference: inline::sentence-transformers
     vector_io: remote::pgvector
     safety: inline::llama-guard
     agents: inline::meta-reference

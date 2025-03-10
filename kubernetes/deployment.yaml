@@ -77,6 +77,8 @@ spec:
           args:
             - '--template'
             - remote-vllm
+            - '--yaml-config'
+            - /app/config.yaml
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       dnsPolicy: ClusterFirst

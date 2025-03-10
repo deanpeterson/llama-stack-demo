@@ -1,0 +1,2 @@
+llama stack build --config build.yaml --image-name=vllm-pgvector
+

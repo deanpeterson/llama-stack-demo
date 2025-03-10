@@ -20,6 +20,9 @@ providers:
       max_tokens: ${env.VLLM_MAX_TOKENS:4096}
       api_token: ${env.VLLM_API_TOKEN:fake}
       model_id: ${env.INFERENCE_MODEL}
+  - provider_id: sentence-transformers
+    provider_type: inline::sentence-transformers
+    config: {}
   vector_io:
   - provider_id: pgvector
     provider_type: remote::pgvector
@@ -62,8 +65,27 @@ providers:
     config:
       openai_api_key: ${env.OPENAI_API_KEY:}
   tool_runtime:
+  - provider_id: brave-search
+    provider_type: remote::brave-search
+    config:
+      api_key: ${env.BRAVE_SEARCH_API_KEY:}
+      max_results: 3
+  - provider_id: tavily-search
+    provider_type: remote::tavily-search
+    config:
+      api_key: ${env.TAVILY_SEARCH_API_KEY:}
+      max_results: 3
+  - provider_id: code-interpreter
+    provider_type: inline::code-interpreter
+    config: {}
+  - provider_id: rag-runtime
+    provider_type: inline::rag-runtime
+    config: {}
   - provider_id: model-context-protocol
     provider_type: remote::model-context-protocol
+    config: {}
+  - provider_id: wolfram-alpha
+    provider_type: remote::wolfram-alpha
     config: {}
 metadata_store: 
   type: sqlite
@@ -73,7 +95,7 @@ models:
   model_id: ${env.INFERENCE_MODEL}
   provider_id: vllm-inference
   model_type: llm
-- metadata:
+- metadata: 
     embedding_dimension: 384
   model_id: all-MiniLM-L6-v2
   provider_id: sentence-transformers
